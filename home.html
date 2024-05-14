@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Mesajlaşma Saytı</title>
+        <link rel="stylesheet" href="./home.css">
+        <link rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+            integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
+            crossorigin="anonymous" referrerpolicy="no-referrer" />
+    </head>
+    <body>
+        <header>
+            <div>
+                <h1 id="welcomeMessage"></h1>
+            </div>
+
+            <div id="chatName">
+                <h2>FirstChatProject.com</h2>
+            </div>
+
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Search users">
+                <div class="icon-container">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </div>
+            </div>
+
+        </header>
+        <main>
+
+            <ul id="leftSectionForMessages">
+                <p
+                    style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 20px; color: rgb(246, 6, 6); font-weight: bold;">Start
+                    your first conversation</p>
+            </ul>
+
+            <div id="messageConsol">
+                <div id="usersInfo">
+                    <img id="imgForMessages" src="./img/profile-2.png">
+                    <h3 id="nameForMessages"></h3>
+                </div>
+
+                <div id="messagesBoard">
+                    <p
+                        style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 20px; color: rgb(246, 6, 6); font-weight: bold;">Welcome
+                        my FirstChatProject.com
+                    </p>
+                </div>
+
+                <div id="inputParentElement">
+                    <input type="text" placeholder="Write here"
+                        id="inputForMessage">
+                    <button id="btnForSendMsg" disabled>Send</button>
+                </div>
+
+            </div>
+        </main>
+
+        <footer>
+            <button class="logOut">Log Out</button>
+            <button class="setProfile">Profile Settings</button>
+        </footer>
+
+        <div class="modal">
+            <div class="modalContentContainer">
+                <div class="modal-content">
+
+                </div>
+                <button class="closeModal">
+                    <i class="fa-solid fa-xmark "></i></button>
+            </div>
+        </div>
+
+        <script type="module" src="home.js"></script>
+    </body>
+</html>

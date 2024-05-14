@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login and Registration Page</title>
+    <link rel="stylesheet" href="loginStyle.css">
+</head>
+<body>
+    <div class="container">
+        <h2>Login and Registration</h2>
+
+        <div class="forms">
+
+            <div id="login-form">
+                <div>
+                    <input type="email" id="login-email" name="login-email" placeholder="Email">
+                </div>
+                <div>
+                    <input type="password" id="login-password" name="login-password" placeholder="Password">
+                </div>
+                <div>
+                    <button id="login-btn">Login</button>
+                </div>
+                <p>Don't have an account? <a href="#" id="register-link">Register here</a></p>
+            </div>
+
+            
+            <div id="register-form" style="display: none;">
+                <div id="register-email-container">
+                    <input type="email" id="register-email" name="register-email" placeholder="Email">
+                </div>
+                <div>
+                    <input type="text" id="register-name" name="register-name" placeholder="Name" >
+                </div>
+                <div>
+                    <input type="text" id="register-surname" name="register-surname" placeholder="Surname">
+                </div>
+                <div>
+                    <input type="password" id="register-password" name="register-password" placeholder="Password">
+                </div>
+                <div>
+                    <input type="date" id="register-birthday" name="register-birthday" placeholder="Birthday">
+                </div>
+                <div>
+                    <button id="register-btn">Register</button>
+                </div>
+                <p>Already have an account? <a href="#" id="login-link">Login here</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="./index.js"></script>
+</body>
+</html>
