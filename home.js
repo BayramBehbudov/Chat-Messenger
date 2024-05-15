@@ -18,6 +18,7 @@ import {
     push,
     set,
     get,
+    remove,
 } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
 
 
@@ -42,6 +43,7 @@ const searchIconSelector = document.querySelector(".icon-container")
 const modal = document.querySelector(".modal")
 const modalContent = document.querySelector(".modal-content")
 const leftSectionForMessages = document.getElementById("leftSectionForMessages")
+const deleteChatIconSelector = document.querySelector(".deleteIcon")
 let activeBoardKey
 let secUserName
 
@@ -65,7 +67,6 @@ onValue(ref(database, `users/${activeUserKey}/newMessages`), (snap) => {
 
     if (activeBoardKey) {
         openMsgBoard(activeBoardKey, secUserName)
-
         scrollToBottom();
     }
 })
@@ -264,18 +265,20 @@ leftSectionForMessages.addEventListener("click", function (event) {
 // mesaj konsolunu açan funksiya. arqument olarraq açacağı söbətin id-ni və söhbətdəki ikinci tərəfin adını alır və müvafiq olaraq yazdırır
 
 async function openMsgBoard(msgKey, secondUserName) {
+    // qarşı tərəfin adını yazdırırıq
+    document.querySelector("#nameForMessages").textContent = secondUserName
 
     // mesaj konsoluna ona göndərilən id-nin içərisindəki mesajları yazırıq
     document.querySelector("#messagesBoard").innerHTML = (await getDataInDatabase("messages"))[msgKey].msgText
 
     // həmin konsoldakı inputa key adında atribut mənimsədirik. atributun dəyəri açıq olan söbətin id-si olacaq. bu bizə yeni mesaj göndərərkən hansı söbətə göndərəcəyimizi bilmək üçün lazımdır.
-    document.querySelector("#messagesBoard").setAttribute("key", `${msgKey}`)
+    document.querySelector("#messagesBoard").setAttribute("key", msgKey)
+    deleteChatIconSelector.setAttribute("key", msgKey)
 
     // mesaj göndər buttonu başlanğıcda disabled idi onu aktiv edirik
     document.querySelector("#btnForSendMsg").disabled = false
 
-    // qarşı tərəfin adını yazdırırıq
-    document.querySelector("#nameForMessages").textContent = secondUserName
+
 
     activeBoardKey = msgKey
     secUserName = secondUserName
@@ -423,3 +426,19 @@ function isValidEmail(email) {  // daxil edilən email inputunun içindəki məl
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
 }
+
+
+
+
+deleteChatIconSelector.addEventListener("click", () => {
+    let msgBoardKey = deleteChatIconSelector.getAttribute("key")
+    remove(ref(database, `messages/${msgBoardKey}`))
+    writeLastMessages()
+    document.querySelector("#nameForMessages").textContent = ""
+    messagesBoard.innerHTML = `
+    <p
+    style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 20px; color: rgb(246, 6, 6); font-weight: bold;">Welcome
+    my FirstChatProject.com
+</p>`
+
+})

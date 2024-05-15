@@ -135,42 +135,65 @@ main {
         justify-content: space-between;
 
         #usersInfo {
-            width: 96%;
+            width: 100%;
             height: 11%;
             background-color: #bbdef5;
             border-radius: 10px;
-            padding: 0 2%;
             display: flex;
-            gap: 20px;
+            justify-content: space-between;
             align-items: center;
 
+            .leftSecUsersInfo {
+                padding: 0 2%;
+                display: flex;
+                align-items: center;
+                width: fit-content;
+                gap: 20px;
 
-            #imgForMessages {
-                width: 30px;
-                height: 30px;
-                border-radius: 50%;
-                border: 1px solid black;
-                padding: 5px;
+                #imgForMessages {
+                    width: 30px;
+                    height: 30px;
+                    border-radius: 50%;
+                    border: 1px solid black;
+                    padding: 5px;
+                }
+
+                #nameForMessages {
+                    color: #e74c3c;
+                    font-size: 30px;
+                }
             }
 
-            #nameForMessages {
-                color: #e74c3c;
-                font-size: 30px;
+            .rightSecUsersInfo {
+                padding: 0 2%;
+                display: flex;
+                align-items: center;
+                width: fit-content;
+                gap: 10px;
+
+                i {
+                    cursor: pointer;
+                }
+
+                i:active {
+                    transform: scale(0.7);
+                }
             }
 
 
         }
 
         #messagesBoard {
-            background-color: #dfb8f6;
-            width: 96%;
-            height: 72%;
+            background-color: #26073b;
+            width: 99%;
+            height: 70%;
             max-height: 364.5px;
             border-radius: 10px;
             padding: 0 2%;
             font-size: 20px;
             overflow-y: scroll;
             scrollbar-width: none;
+            padding: 0.5%;
 
             .message {
                 width: fit-content;
@@ -351,7 +374,6 @@ main {
 
 
 }
-
 
 
 /* Footer */

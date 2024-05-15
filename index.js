@@ -61,7 +61,7 @@ document.addEventListener("DOMContentLoaded", function () {  // bütün səhifə
 
     };
 
-    registerBtn.onclick = () => { // registr formdakı registr btna klik olanda
+    registerBtn.onclick = async () => { // registr formdakı registr btna klik olanda
 
         if (checkInputs(inputsRegistr)) { // əgər registr inputlar doludursa
 
@@ -71,7 +71,8 @@ document.addEventListener("DOMContentLoaded", function () {  // bütün səhifə
             const registerPassword = document.getElementById("register-password").value
             const registerBirthday = document.getElementById("register-birthday").value
 
-            if (findUsers(registerEmail)) { // əgər bu email daha öncə qeydiyyatdan keçməyibsə
+            if (await findUsers(registerEmail)) { // əgər bu email daha öncə qeydiyyatdan keçməyibsə
+                console.log(registerEmail);
                 if (isValidEmail(registerEmail)) { // mail forması doğrudursa
 
                     push(usersRef, {
@@ -83,6 +84,7 @@ document.addEventListener("DOMContentLoaded", function () {  // bütün səhifə
                         newMessages: false,
                     });
                     writeErrorMessage("register-form", "Registration completed")
+                    window.location.href = "index.html";
                 } else {
                     writeErrorMessage("register-email-container", "Enter a valid email address")
                 }
@@ -122,6 +124,7 @@ async function usersControl(email, password) { // login zamanı istifadəçi mə
     let result = false
 
     const usersData = await getDataInDatabase("users")
+
     Object.keys(usersData).forEach(userKey => {
 
         const user = usersData[userKey]
@@ -165,7 +168,6 @@ async function findUsers(email) {  // bu funksiya ona gələn emaili databasedə
     })
     return result
 }
-
 
 
 function isValidEmail(email) {  // daxil edilən email inputunun içindəki məlumatın emailin conteksinə uyğunluğunu yoxlayır
