@@ -273,11 +273,25 @@ async function openMsgBoard(msgKey, secondUserName) {
     secUserName = secondUserName
 }
 
+document.addEventListener("keydown", function (event) {
+    if (event.key === "Enter") {
+        if (activeBoardKey) {
+
+            msgSender()
+
+        } else {
+            alert("Choose who you want to talk to!")
+        }
+
+    }
+});
 
 
 
 // mesaj konsolundakı send buttonuna klik eventi
-document.querySelector("#btnForSendMsg").addEventListener("click", async () => {
+document.querySelector("#btnForSendMsg").addEventListener("click", msgSender)
+
+async function msgSender() {
     // mesajı göndərəcəyimiz söhbətin id-ni əldə edirik
     const currentMsgKey = document.getElementById("messagesBoard").getAttribute("key")
     // öncəki mesajları və tərəflərin id-lərini əldə edirik
@@ -300,9 +314,7 @@ document.querySelector("#btnForSendMsg").addEventListener("click", async () => {
     }
 
     openMsgBoard(currentMsgKey, secondUserName)
-})
-
-
+}
 
 //logout klik olduqda
 document.querySelector(".logOut").addEventListener("click", () => {
