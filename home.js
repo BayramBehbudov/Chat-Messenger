@@ -42,6 +42,8 @@ const searchIconSelector = document.querySelector(".icon-container")
 const modal = document.querySelector(".modal")
 const modalContent = document.querySelector(".modal-content")
 const leftSectionForMessages = document.getElementById("leftSectionForMessages")
+let activeBoardKey
+
 
 // databaseyə müraciətlər
 async function getDataInDatabase(url) {
@@ -57,8 +59,9 @@ function pushDataInDatabase(url, data) {
     push(ref(database, `${url}`), data)
 }
 
-onValue(ref(database, "messages"), (snap) => {
+onValue(ref(database, `users/${activeUserKey}/newMessages`), (snap) => {
     writeLastMessages()
+    setDataInDatabase(`users/${activeUserKey}/newMessages`, "false")
 })
 
 
@@ -247,6 +250,7 @@ leftSectionForMessages.addEventListener("click", function (event) {
 // mesaj konsolunu açan funksiya. arqument olarraq açacağı söbətin id-ni və söhbətdəki ikinci tərəfin adını alır və müvafiq olaraq yazdırır
 
 async function openMsgBoard(msgKey, secondUserName) {
+
     // mesaj konsoluna ona göndərilən id-nin içərisindəki mesajları yazırıq
     document.querySelector("#messagesBoard").innerHTML = (await getDataInDatabase("messages"))[msgKey].msgText
 
@@ -258,7 +262,15 @@ async function openMsgBoard(msgKey, secondUserName) {
 
     // qarşı tərəfin adını yazdırırıq
     document.querySelector("#nameForMessages").textContent = secondUserName
+
+    // activeBoardKey = msgKey
+
+    // onValue(ref(database, `messages/${activeBoardKey}/msgText`), (snap) => {
+    //     openMsgBoard(activeBoardKey)
+    // })
 }
+
+
 
 
 // mesaj konsolundakı send buttonuna klik eventi
@@ -282,13 +294,12 @@ document.querySelector("#btnForSendMsg").addEventListener("click", async () => {
         setDataInDatabase(`messages/${currentMsgKey}/msgText`, msgText)
 
         setDataInDatabase(`messages/${currentMsgKey}/lastMsgTime`, getHoursAndMinutes())
-
-        openMsgBoard(currentMsgKey, secondUserName)
-
+        setDataInDatabase(`users/${activeUserKey}/newMessages`, "false")
     }
 
-
+    openMsgBoard(currentMsgKey, secondUserName)
 })
+
 
 
 //logout klik olduqda
@@ -333,7 +344,7 @@ document.querySelector(".setProfile").addEventListener("click", () => {
                 <button class="setBtn">Save</button>`
 
 
-                
+
     document.querySelector(".setBtn").addEventListener("click", () => {
 
         let emailSel = document.querySelector('#set-email');

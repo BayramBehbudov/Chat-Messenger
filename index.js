@@ -79,7 +79,8 @@ document.addEventListener("DOMContentLoaded", function () {  // bütün səhifə
                         registerName,
                         registerSurname,
                         registerPassword,
-                        registerBirthday
+                        registerBirthday,
+                        newMessages: false,
                     });
                     writeErrorMessage("register-form", "Registration completed")
                 } else {
