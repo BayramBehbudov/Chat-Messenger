@@ -65,9 +65,17 @@ onValue(ref(database, `users/${activeUserKey}/newMessages`), (snap) => {
 
     if (activeBoardKey) {
         openMsgBoard(activeBoardKey, secUserName)
+
+        scrollToBottom();
     }
 })
 
+
+function scrollToBottom() {
+
+    const messagesBoard = document.getElementById("messagesBoard");
+    messagesBoard.scrollTop = messagesBoard.scrollHeight;
+}
 
 
 
@@ -273,18 +281,19 @@ async function openMsgBoard(msgKey, secondUserName) {
     secUserName = secondUserName
 }
 
+
+
 document.addEventListener("keydown", function (event) {
     if (event.key === "Enter") {
         if (activeBoardKey) {
-
             msgSender()
-
         } else {
             alert("Choose who you want to talk to!")
         }
-
     }
 });
+
+
 
 
 
@@ -314,13 +323,20 @@ async function msgSender() {
     }
 
     openMsgBoard(currentMsgKey, secondUserName)
+
 }
+
+
+
 
 //logout klik olduqda
 document.querySelector(".logOut").addEventListener("click", () => {
     localStorage.clear()
     window.location.href = "./index.html"
 })
+
+
+
 
 
 // istifadəçi məlumatlarını dəyişmək istəyərsə
