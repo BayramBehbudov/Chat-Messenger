@@ -43,7 +43,7 @@ const modal = document.querySelector(".modal")
 const modalContent = document.querySelector(".modal-content")
 const leftSectionForMessages = document.getElementById("leftSectionForMessages")
 let activeBoardKey
-
+let secUserName
 
 // databaseyə müraciətlər
 async function getDataInDatabase(url) {
@@ -61,7 +61,11 @@ function pushDataInDatabase(url, data) {
 
 onValue(ref(database, `users/${activeUserKey}/newMessages`), (snap) => {
     writeLastMessages()
-    setDataInDatabase(`users/${activeUserKey}/newMessages`, "false")
+    // setDataInDatabase(`users/${activeUserKey}/newMessages`, "false")
+
+    if (activeBoardKey) {
+        openMsgBoard(activeBoardKey, secUserName)
+    }
 })
 
 
@@ -170,6 +174,7 @@ async function pushFirstMessage(secondUserInfo) {
     // yaradılacaq contactın formatı
     const msgDataForPush = {
         usersKey: [activeUserKey, secondUserInfo[0]],
+        userName: [activeUserName, secondUserInfo[1].registerName],
         msgText,
         lastMsgTime,
     }
@@ -181,6 +186,7 @@ async function pushFirstMessage(secondUserInfo) {
     const msgKey = await controlMsg(secondUserInfo[0])
 
     // mesaj konsolunda hazırkı mesajları yazdırırıq. əslində mesaj boş string olduğu üçün heçnə yazılmayacaq amma yuxarıda adı yazılacaq
+    writeLastMessages()
     openMsgBoard(msgKey, secondUserInfo[1].registerName)
 }
 
@@ -263,11 +269,8 @@ async function openMsgBoard(msgKey, secondUserName) {
     // qarşı tərəfin adını yazdırırıq
     document.querySelector("#nameForMessages").textContent = secondUserName
 
-    // activeBoardKey = msgKey
-
-    // onValue(ref(database, `messages/${activeBoardKey}/msgText`), (snap) => {
-    //     openMsgBoard(activeBoardKey)
-    // })
+    activeBoardKey = msgKey
+    secUserName = secondUserName
 }
 
 
@@ -292,9 +295,8 @@ document.querySelector("#btnForSendMsg").addEventListener("click", async () => {
     if (inputValue && currentMsgKey != null) {
         msgText += `<div class="message"><div>    <h6>${activeUserName}</h6>    <span>${getHoursAndMinutes()}</span></div><div>    <p> ${inputValue}</p></div></div>`
         setDataInDatabase(`messages/${currentMsgKey}/msgText`, msgText)
-
         setDataInDatabase(`messages/${currentMsgKey}/lastMsgTime`, getHoursAndMinutes())
-        setDataInDatabase(`users/${activeUserKey}/newMessages`, "false")
+        setDataInDatabase(`users/${secondUserKey}/newMessages`, "true")
     }
 
     openMsgBoard(currentMsgKey, secondUserName)
