@@ -61,7 +61,7 @@ function pushDataInDatabase(url, data) {
 
 onValue(ref(database, `users/${activeUserKey}/newMessages`), (snap) => {
     writeLastMessages()
-    // setDataInDatabase(`users/${activeUserKey}/newMessages`, "false")
+    setDataInDatabase(`users/${activeUserKey}/newMessages`, "false")
 
     if (activeBoardKey) {
         openMsgBoard(activeBoardKey, secUserName)
