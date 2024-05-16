@@ -45,7 +45,6 @@ const modalContent = document.querySelector(".modal-content")
 const leftSectionForMessages = document.getElementById("leftSectionForMessages")
 const deleteChatIconSelector = document.querySelector(".deleteIcon")
 let activeBoardKey
-let secUserName
 
 // databaseyə müraciətlər
 async function getDataInDatabase(url) {
@@ -66,7 +65,7 @@ onValue(ref(database, `users/${activeUserKey}/newMessages`), (snap) => {
     setDataInDatabase(`users/${activeUserKey}/newMessages`, "false")
 
     if (activeBoardKey) {
-        openMsgBoard(activeBoardKey, secUserName)
+        openMsgBoard(activeBoardKey)
         scrollToBottom();
     }
 })
@@ -139,7 +138,7 @@ async function searchParams() {  // istifadəçini axtarmaq üçün funksiya
             // yeni contact yaradırıq
             pushFirstMessage(foundCurrentUserInfo)
         } else { // əgər arxiv varsa həmin arxivi açırıq
-            openMsgBoard(msgKey, foundCurrentUserInfo[1].registerName)
+            openMsgBoard(msgKey)
         }
 
     })
@@ -196,7 +195,7 @@ async function pushFirstMessage(secondUserInfo) {
 
     // mesaj konsolunda hazırkı mesajları yazdırırıq. əslində mesaj boş string olduğu üçün heçnə yazılmayacaq amma yuxarıda adı yazılacaq
     writeLastMessages()
-    openMsgBoard(msgKey, secondUserInfo[1].registerName)
+    openMsgBoard(msgKey)
 }
 
 
@@ -220,13 +219,8 @@ async function writeLastMessages() {  // bu funksiya istifadəçinin son yazış
     // istifadəçinin id-nə uyğun olaraq filter edir və kimlər ilə yazışması varsa həmin mesajlaşmanın id-ni qaytarır
     const allMsgId = Object.keys(allMessages).filter(key => allMessages[key].usersKey.includes(activeUserKey))
 
-    // bütün user məlumatlarını götürür
-    const allUsers = await getDataInDatabase("users")
-
 
     if (allMsgId.length != 0) { // öncədən mesajlaşma olubsa 
-
-
 
         let allMessagesText = ""
 
@@ -235,9 +229,9 @@ async function writeLastMessages() {  // bu funksiya istifadəçinin son yazış
 
             let msgKey = allMsgId[i]
 
-            const secondUserKey = allMessages[msgKey].usersKey.filter(userKey => userKey != activeUserKey)
+            const secondUserName = allMessages[msgKey].userName.filter(username => username != activeUserName)[0]
 
-            allMessagesText += `<li class="msgSelector" id="${msgKey}"><img src = "./img/profile.png"><p>${allUsers[secondUserKey].registerName}</p><span>${allMessages[msgKey].lastMsgTime}</span></li > `
+            allMessagesText += `<li class="msgSelector" id="${msgKey}"><img src = "./img/profile.png"><p>${secondUserName}</p><span>${allMessages[msgKey].lastMsgTime}</span></li > `
         }
 
         leftSectionForMessages.innerHTML = allMessagesText
@@ -246,30 +240,29 @@ async function writeLastMessages() {  // bu funksiya istifadəçinin son yazış
 
 }
 
+
 //sol sütundakı adlara klik olanda
 leftSectionForMessages.addEventListener("click", function (event) {
     if (event.target.classList.contains("msgSelector")) {
         // həmin adlar həm də söhbətin id-ni öz id-si olaraq saxlayır.həmin id-ni götürürük
         const msgKey = event.target.id;
-        // həmin klik olunan elementin htmlni götürürük
-        const text = event.target.innerHTML
-        // burada isə həmin html içindən istifadəçinin adını regular expression vasitəsilə əldə edirik
-        const secondUserName = text.match(/<p>(.*?)<\/p>/)[1];
-
-        // və nəhayət mesaj konsolunu açırıq
-        openMsgBoard(msgKey, secondUserName)
+        // mesaj konsolunu açırıq
+        openMsgBoard(msgKey)
 
     }
 });
 
 // mesaj konsolunu açan funksiya. arqument olarraq açacağı söbətin id-ni və söhbətdəki ikinci tərəfin adını alır və müvafiq olaraq yazdırır
 
-async function openMsgBoard(msgKey, secondUserName) {
+async function openMsgBoard(msgKey) {
+
+    const msgData = await getDataInDatabase(`messages/${msgKey}`)
+
     // qarşı tərəfin adını yazdırırıq
-    document.querySelector("#nameForMessages").textContent = secondUserName
+    document.querySelector("#nameForMessages").textContent = msgData.userName.filter(username => username != activeUserName)[0]
 
     // mesaj konsoluna ona göndərilən id-nin içərisindəki mesajları yazırıq
-    document.querySelector("#messagesBoard").innerHTML = (await getDataInDatabase("messages"))[msgKey].msgText
+    document.querySelector("#messagesBoard").innerHTML = msgData.msgText
 
     // həmin konsoldakı inputa key adında atribut mənimsədirik. atributun dəyəri açıq olan söbətin id-si olacaq. bu bizə yeni mesaj göndərərkən hansı söbətə göndərəcəyimizi bilmək üçün lazımdır.
     document.querySelector("#messagesBoard").setAttribute("key", msgKey)
@@ -281,7 +274,6 @@ async function openMsgBoard(msgKey, secondUserName) {
 
 
     activeBoardKey = msgKey
-    secUserName = secondUserName
 }
 
 
@@ -312,7 +304,6 @@ async function msgSender() {
 
     // burada qarşı tərəfi müəyyən edirik
     const secondUserKey = users.filter(userName => userName != activeUserKey)
-    const secondUserName = await getDataInDatabase(`users/${secondUserKey}/registerName`)
 
     // inputun valuesi
     const inputValue = await getInputValue("inputForMessage")
@@ -325,7 +316,7 @@ async function msgSender() {
         setDataInDatabase(`users/${secondUserKey}/newMessages`, "true")
     }
 
-    openMsgBoard(currentMsgKey, secondUserName)
+    openMsgBoard(currentMsgKey)
 
 }
 
