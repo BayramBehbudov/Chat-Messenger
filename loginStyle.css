@@ -38,7 +38,8 @@ button {
     transition: all 0.3s ease;
     border-radius: 4px;
     margin: 0 5px;
-    width: 100%;
+    width: calc(100% - 28px);
+
 }
 
 
