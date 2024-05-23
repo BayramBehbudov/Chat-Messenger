@@ -202,7 +202,7 @@ async function pushFirstMessage(secondUserInfo) {
 // bu funksiya istifadəçi ilə ona göndərilən istifadəçi arasında söhbət arxivi varsa həmin söbətin id-ni qaytarır
 async function controlMsg(userKey) {
     const allMsg = await getDataInDatabase("messages")
-    return Object.keys(allMsg).filter(key => {
+    return Object.keys(allMsg ? allMsg : "").filter(key => {
         if (allMsg[key].usersKey.includes(userKey) && allMsg[key].usersKey.includes(activeUserKey)) {
             return key
         }
@@ -217,7 +217,7 @@ async function writeLastMessages() {  // bu funksiya istifadəçinin son yazış
     const allMessages = await getDataInDatabase("messages"); // databasedən ümumi mesajları götürür
 
     // istifadəçinin id-nə uyğun olaraq filter edir və kimlər ilə yazışması varsa həmin mesajlaşmanın id-ni qaytarır
-    const allMsgId = Object.keys(allMessages).filter(key => allMessages[key].usersKey.includes(activeUserKey))
+    const allMsgId = Object.keys(allMessages ? allMessages : "").filter(key => allMessages[key].usersKey.includes(activeUserKey))
 
 
     if (allMsgId.length != 0) { // öncədən mesajlaşma olubsa 
@@ -263,7 +263,7 @@ async function openMsgBoard(msgKey) {
 
     // mesaj konsoluna ona göndərilən id-nin içərisindəki mesajları yazırıq
     document.querySelector("#messagesBoard").innerHTML = msgData.msgText
-
+    leftOrRight()
     // həmin konsoldakı inputa key adında atribut mənimsədirik. atributun dəyəri açıq olan söbətin id-si olacaq. bu bizə yeni mesaj göndərərkən hansı söbətə göndərəcəyimizi bilmək üçün lazımdır.
     document.querySelector("#messagesBoard").setAttribute("key", msgKey)
     deleteChatIconSelector.setAttribute("key", msgKey)
@@ -271,9 +271,21 @@ async function openMsgBoard(msgKey) {
     // mesaj göndər buttonu başlanğıcda disabled idi onu aktiv edirik
     document.querySelector("#btnForSendMsg").disabled = false
 
-
+    document.querySelector(".deleteIcon").style.display = "block"
 
     activeBoardKey = msgKey
+
+}
+
+
+// aşağıdakı funkiya istifadəçinin öz mesajlarını sağ tərəfə çəkir qarşı tərəfin mesajları isə solda qalır
+
+function leftOrRight() {
+    const msgs = document.querySelectorAll(".message")
+    msgs.forEach(msg => {
+        const msgName = msg.querySelector("h6").textContent
+        msgName == activeUserName ? msg.setAttribute("style", "align-self: flex-end;") : ""
+    })
 }
 
 
@@ -301,21 +313,23 @@ async function msgSender() {
     // öncəki mesajları və tərəflərin id-lərini əldə edirik
     let msgText = await getDataInDatabase(`messages/${currentMsgKey}/msgText`)
     const users = await getDataInDatabase(`messages/${currentMsgKey}/usersKey`)
-
     // burada qarşı tərəfi müəyyən edirik
     const secondUserKey = users.filter(userName => userName != activeUserKey)
+
+    msgText = msgText.replace('id="endMsg"', "")
 
     // inputun valuesi
     const inputValue = await getInputValue("inputForMessage")
 
     // aşağıda isə yoxlayırıq ki inputun valuesu və mesajı göndərəcəyimiz söhbətin id-si varmı
     if (inputValue && currentMsgKey != null) {
-        msgText += `<div class="message"><div>    <h6>${activeUserName}</h6>    <span>${getHoursAndMinutes()}</span></div><div>    <p> ${inputValue}</p></div></div>`
+        msgText += `<div class="message" id="endMsg"><div>    <h6>${activeUserName}</h6>    <span>${getHoursAndMinutes()}</span></div><div>    <p> ${inputValue}</p></div></div>`
         setDataInDatabase(`messages/${currentMsgKey}/msgText`, msgText)
         setDataInDatabase(`messages/${currentMsgKey}/lastMsgTime`, getHoursAndMinutes())
         setDataInDatabase(`users/${secondUserKey}/newMessages`, "true")
     }
 
+    // console.log(document.querySelector("#endMsg").scrollHeight);
     openMsgBoard(currentMsgKey)
 
 }
@@ -433,3 +447,7 @@ deleteChatIconSelector.addEventListener("click", () => {
 </p>`
 
 })
+
+
+
+
