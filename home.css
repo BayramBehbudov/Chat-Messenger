@@ -161,6 +161,7 @@ main {
                 #nameForMessages {
                     color: #e74c3c;
                     font-size: 30px;
+                    cursor: pointer;
                 }
             }
 
@@ -291,6 +292,7 @@ main {
     min-height: 20%;
     max-height: 80%;
     overflow-y: auto;
+    scrollbar-width: none;
 
     .closeModal {
         font-size: 25px;
@@ -355,11 +357,37 @@ main {
 
 }
 
+.friendList {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: auto;
+
+    .friendItem {
+        margin-top: 5px;
+        padding: 10px;
+        font-size: 18px;
+        cursor: pointer;
+        background-color: #5904f6;
+        width: fit-content;
+        height: fit-content;
+        border-radius: 10px;
+        color: yellow;
+        transition: all 0.5s;
+
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .friendItem:hover {
+        transform: scale(1.1);
+    }
+}
 
 .imgForModal {
     width: 25%;
     height: 40%;
-
 }
 
 .userInfoStyle {

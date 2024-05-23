@@ -66,17 +66,8 @@ onValue(ref(database, `users/${activeUserKey}/newMessages`), (snap) => {
 
     if (activeBoardKey) {
         openMsgBoard(activeBoardKey)
-        scrollToBottom();
     }
 })
-
-
-function scrollToBottom() {
-
-    const messagesBoard = document.getElementById("messagesBoard");
-    messagesBoard.scrollTop = messagesBoard.scrollHeight;
-}
-
 
 
 //  inputun valuesini götürmək üçün funksiya. inputun id-ni arqument olaraq qəbul edir
@@ -89,7 +80,6 @@ function getInputValue(idName) {
 
 // bu funksiya halhazırki tairxi saat:dəqiqə formasında qaytarır
 function getHoursAndMinutes() {
-    const date = new Date()
     let hour = new Date().getHours().toString().padStart("2", 0)
     let minute = new Date().getMinutes().toString().padStart("2", 0)
     return `${hour}:${minute}`
@@ -115,47 +105,25 @@ async function searchParams() {  // istifadəçini axtarmaq üçün funksiya
 
     const foundCurrentUserInfo = Object.entries(allUsersDataInFirebase).filter(users => users[1].registerEmail == searchInputValue)[0]  // yoxlayırıq əgər databasedə inputdan gələn valueyə uyğun məlumat varsa mənimsədirik dəyişənə
 
-    modal.style.display = "block" // modalı açırıq ki nəticəni yazdıraq
 
     if (foundCurrentUserInfo != undefined) { // əgər foundCurrentUserInfo məlumat varsa
         writeInfoInModal(foundCurrentUserInfo) //funksiyaya ötrürük ki yazdıraq istifadəçi məlummatlarını
     } else { // əgər məlumat yoxdusa
+        modal.style.display = "block"
         modalContent.textContent = `No such user found` // mesajı ötürürük modala
         modalContent.setAttribute("style", "font-size: 16px; color: white;") // modala dizayn veririk
     }
 
-
-    // modal açıq olan zaman msj yaz btna klik olanda contact yaratmaq ucun
-    document.querySelector(".msgBtnInModal")?.addEventListener("click", async () => {
-        modal.style.display = "none" // modalI bağladıq
-
-        // funksiyanı çağırırıq ki yoxlayaq bu istifadəçilər arasında mesajlaşma arxivi var ya yox
-        const msgKey = await controlMsg(foundCurrentUserInfo[0])
-
-
-        if (msgKey == undefined) { // əgər yoxdursa
-
-            // yeni contact yaradırıq
-            pushFirstMessage(foundCurrentUserInfo)
-        } else { // əgər arxiv varsa həmin arxivi açırıq
-            openMsgBoard(msgKey)
-        }
-
-    })
-
 }
 
 
+async function writeInfoInModal(userInfo) { // bu funksiya modalın içinə göndərilən məlumatlara uyğun məlumat dərc edirik
 
+    modal.style.display = "block" // modalı açırıq ki nəticəni yazdıraq
 
-
-
-
-
-function writeInfoInModal(userInfo) { // bu funksiya modalın içinə göndərilən məlumatlara uyğun məlumat dərc edirik
     modalContent.innerHTML =
         `<img src="./img/profile-2.png" class="imgForModal" alt="profilePicture">
-        <ul class="userInfoStyle">
+        <ul class="userInfoStyle  userKey="${userInfo[0]}"">
             <li>Name: ${userInfo[1].registerName}</li>
             <li>Surname: ${userInfo[1].registerSurname}</li>
             <li>Email:
@@ -164,12 +132,49 @@ function writeInfoInModal(userInfo) { // bu funksiya modalın içinə göndəril
             <li>Birthday: ${userInfo[1].registerBirthday
         }</li>
             <li><button class="msgBtnInModal">Write Message</button> 
-            <button>Add friend</button></li>
+            <button class="setFriendBtn">${(await getDataInDatabase(`users/${activeUserKey}/friends`))?.includes(userInfo[0]) ? "Delete Friend" : "Add Friend"}</button></li>
         </ul>`
+    document.querySelector(".setFriendBtn").addEventListener("click", async () => {
+        setFriend(userInfo[0], userInfo[1].registerName)
+        modal.style.display = "none" // modalI bağladıq
+        modalContent.innerHTML = ""
+    })
 
+
+
+    // modal açıq olan zaman msj yaz btna klik olanda contact yaratmaq ucun
+    document.querySelector(".msgBtnInModal")?.addEventListener("click", async () => {
+        modal.style.display = "none" // modalI bağladıq
+
+        // funksiyanı çağırırıq ki yoxlayaq bu istifadəçilər arasında mesajlaşma arxivi var ya yox
+        const msgKey = await controlMsg(userInfo[0])
+
+
+        if (msgKey == undefined) { // əgər yoxdursa
+
+            // yeni contact yaradırıq
+            pushFirstMessage(userInfo)
+        } else { // əgər arxiv varsa həmin arxivi açırıq
+            openMsgBoard(msgKey)
+        }
+
+    })
 }
 
+// aşağıdakı funksiya add friend butonuna klik olduqda çağrılır və istifadəçi məlumatlarını alır. həmin istifadəçi  ilə activeUser dostdursa silir deyilse dost siyahısına əlavə edir
+async function setFriend(userKey, userName) {
+    let myFriends = (await getDataInDatabase(`users/${activeUserKey}`)).friends
+    let data = `<div class="friendItem" id="${userKey}">${userName}</div>`
 
+    if (!myFriends) {
+        myFriends = data
+    } else if (myFriends && !myFriends.includes(data)) {
+        myFriends += data
+    } else if (myFriends && myFriends.includes(data)) {
+        myFriends = myFriends.replace(data, "")
+    }
+    setDataInDatabase(`users/${activeUserKey}/friends`, myFriends)
+}
 
 
 
@@ -240,7 +245,6 @@ async function writeLastMessages() {  // bu funksiya istifadəçinin son yazış
 
 }
 
-
 //sol sütundakı adlara klik olanda
 leftSectionForMessages.addEventListener("click", function (event) {
     if (event.target.classList.contains("msgSelector")) {
@@ -260,6 +264,13 @@ async function openMsgBoard(msgKey) {
 
     // qarşı tərəfin adını yazdırırıq
     document.querySelector("#nameForMessages").textContent = msgData.userName.filter(username => username != activeUserName)[0]
+
+
+    document.querySelector("#nameForMessages").addEventListener("click", async () => {
+        const secondUserKey = msgData.usersKey.filter(userKey => userKey != activeUserKey)[0]
+        const userdata = await getDataInDatabase(`users/${secondUserKey}`)
+        writeInfoInModal([secondUserKey, userdata])
+    })
 
     // mesaj konsoluna ona göndərilən id-nin içərisindəki mesajları yazırıq
     document.querySelector("#messagesBoard").innerHTML = msgData.msgText
@@ -314,7 +325,7 @@ async function msgSender() {
     let msgText = await getDataInDatabase(`messages/${currentMsgKey}/msgText`)
     const users = await getDataInDatabase(`messages/${currentMsgKey}/usersKey`)
     // burada qarşı tərəfi müəyyən edirik
-    const secondUserKey = users.filter(userName => userName != activeUserKey)
+    const secondUserKey = users.filter(userKey => userKey != activeUserKey)
 
     msgText = msgText.replace('id="endMsg"', "")
 
@@ -450,4 +461,25 @@ deleteChatIconSelector.addEventListener("click", () => {
 
 
 
+// aşağıdakı funksiya istifadəçinin dostlarını modalda göstərir
+document.querySelector(".friends").addEventListener("click", async () => {
+    modal.style.display = "block"
+    let allFriends = await getDataInDatabase(`users/${activeUserKey}/friends`)
+    if (allFriends) {
+        modalContent.innerHTML = `
+    <div class="friendList" >
+    ${allFriends}</div >
+    `
+    } else {
+        modalContent.textContent = "Not your friend"
+    }
+})
 
+
+// dostlar siyahısındakı adlara klik olanda həmin istifadəçinin məluimatları ekrana çıxır
+modalContent.addEventListener("click", async (event) => {
+    if (event.target.classList.contains("friendItem")) {
+        const userkey = event.target.id;
+        writeInfoInModal([userkey,await getDataInDatabase(`users/${userkey}`)])
+    }
+});
