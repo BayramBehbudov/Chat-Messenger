@@ -21,6 +21,7 @@ import {
     remove,
 } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
 
+import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-storage.js";
 
 
 const firebaseConfig = {
@@ -37,6 +38,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
+const storage = getStorage(app);
 
 // selectorlar
 const searchIconSelector = document.querySelector(".icon-container")
@@ -72,8 +74,11 @@ onValue(ref(database, `users/${activeUserKey}/newMessages`), (snap) => {
 
 //  inputun valuesini götürmək üçün funksiya. inputun id-ni arqument olaraq qəbul edir
 function getInputValue(idName) {
-    const value = document.getElementById(`${idName}`).value
-    document.getElementById(`${idName}`).value = ""
+    const input = document.getElementById(`${idName}`)
+    let value
+    input.value.trim() ? value = input.value : false
+    input.value = ""
+
     return value
 }
 
@@ -120,9 +125,8 @@ async function searchParams() {  // istifadəçini axtarmaq üçün funksiya
 async function writeInfoInModal(userInfo) { // bu funksiya modalın içinə göndərilən məlumatlara uyğun məlumat dərc edirik
 
     modal.style.display = "block" // modalı açırıq ki nəticəni yazdıraq
-
     modalContent.innerHTML =
-        `<img src="./img/profile-2.png" class="imgForModal" alt="profilePicture">
+        `<img src="${userInfo[1].profilPicUrl}" class="imgForModal" alt="profilePicture" style="width: 40%; border-radius: 40%;">
         <ul class="userInfoStyle  userKey="${userInfo[0]}"">
             <li>Name: ${userInfo[1].registerName}</li>
             <li>Surname: ${userInfo[1].registerSurname}</li>
@@ -159,6 +163,7 @@ async function writeInfoInModal(userInfo) { // bu funksiya modalın içinə gön
         }
 
     })
+
 }
 
 // aşağıdakı funksiya add friend butonuna klik olduqda çağrılır və istifadəçi məlumatlarını alır. həmin istifadəçi  ilə activeUser dostdursa silir deyilse dost siyahısına əlavə edir
@@ -236,7 +241,11 @@ async function writeLastMessages() {  // bu funksiya istifadəçinin son yazış
 
             const secondUserName = allMessages[msgKey].userName.filter(username => username != activeUserName)[0]
 
-            allMessagesText += `<li class="msgSelector" id="${msgKey}"><img src = "./img/profile.png"><p>${secondUserName}</p><span>${allMessages[msgKey].lastMsgTime}</span></li > `
+            const secondUserKey = allMessages[msgKey].usersKey.filter(key => key != activeUserKey)[0]
+
+            const secondUserPicUrl = await getDataInDatabase(`users/${secondUserKey}/profilPicUrl`)
+
+            allMessagesText += `<li class="msgSelector" id="${msgKey}"><img src = ${secondUserPicUrl}><p>${secondUserName}</p><span>${allMessages[msgKey].lastMsgTime}</span></li > `
         }
 
         leftSectionForMessages.innerHTML = allMessagesText
@@ -261,14 +270,15 @@ leftSectionForMessages.addEventListener("click", function (event) {
 async function openMsgBoard(msgKey) {
 
     const msgData = await getDataInDatabase(`messages/${msgKey}`)
-
+    const secondUserKey = msgData.usersKey.filter(key => key != activeUserKey)[0]
+    const userdata = await getDataInDatabase(`users/${secondUserKey}`)
+    const secondUserPicUrl = userdata.profilPicUrl
+    document.querySelector("#imgForMessages").src = secondUserPicUrl
     // qarşı tərəfin adını yazdırırıq
     document.querySelector("#nameForMessages").textContent = msgData.userName.filter(username => username != activeUserName)[0]
 
 
     document.querySelector("#nameForMessages").addEventListener("click", async () => {
-        const secondUserKey = msgData.usersKey.filter(userKey => userKey != activeUserKey)[0]
-        const userdata = await getDataInDatabase(`users/${secondUserKey}`)
         writeInfoInModal([secondUserKey, userdata])
     })
 
@@ -362,35 +372,48 @@ document.querySelector(".logOut").addEventListener("click", () => {
 
 document.querySelector(".setProfile").addEventListener("click", () => {
     modal.style.display = "block"
-    modalContent.innerHTML = `
-    <div class="setContainer">
-                <div >Change Account Info</div>
-                <div class="setInputs">
-                    <input type="email" id="set-email"
-                        name="set-email" placeholder="Email">
-                </div>
+    modalContent.innerHTML = `<div class="setContainer">
+    <div>Change Account Info</div>
+    <div class="setInputs">
+        <input type="email" id="set-email"
+            name="set-email" placeholder="Email">
+    </div>
 
-                <div class="setInputs">
-                    <input type="text" id="set-name" name="set-name"
-                        placeholder="Name">
-                </div>
+    <div class="setInputs">
+        <input type="text" id="set-name" name="set-name"
+            placeholder="Name">
+    </div>
 
-                <div class="setInputs">
-                    <input type="text" id="set-surname"
-                        name="set-surname" placeholder="Surname">
-                </div>
+    <div class="setInputs">
+        <input type="text" id="set-surname"
+            name="set-surname" placeholder="Surname">
+    </div>
 
-                <div class="setInputs">
-                    <input type="password" id="set-password"
-                        name="set-password" placeholder="Password">
-                </div>
+    <div class="setInputs">
+        <input type="password" id="set-password"
+            name="set-password" placeholder="Password">
+    </div>
 
-                <div class="setInputs">
-                    <input type="date" id="set-birthday"
-                        name="set-birthday" placeholder="Birthday">
-                </div>
+    <div class="setInputs">
+        <input type="date" id="set-birthday"
+            name="set-birthday" placeholder="Birthday">
+    </div>
 
-                <button class="setBtn">Save</button>`
+    <div class="setInputs">
+
+    <div class="profilePicCont">
+
+         <label for="set-profilePicture" class="profilPiclabel">
+            <i class="fa-solid fa-cloud-arrow-up"><p class="profilPicText">Choose your picture</p></i>
+        </label>
+
+        <input type="file" id="set-profilePicture">
+    </div>
+    </div>
+    
+    <button class="setBtn">Save</button>
+    </div>
+    `
 
 
 
@@ -401,6 +424,7 @@ document.querySelector(".setProfile").addEventListener("click", () => {
         let surnameSel = document.querySelector('#set-surname');
         let passwordSel = document.querySelector('#set-password');
         let birthdaySel = document.querySelector('#set-birthday');
+        let profilePicSel = document.getElementById('set-profilePicture')
 
 
         if (emailSel.value) {
@@ -433,6 +457,13 @@ document.querySelector(".setProfile").addEventListener("click", () => {
             setDataInDatabase(`users/${activeUserKey}/registerBirthday`, birthdaySel.value)
             birthdaySel.value = ""
         }
+
+        if (profilePicSel.files[0]) {
+            setProfilPic(profilePicSel.files[0])
+        }
+
+        modal.style.display = "none"
+
     })
 })
 
@@ -480,6 +511,30 @@ document.querySelector(".friends").addEventListener("click", async () => {
 modalContent.addEventListener("click", async (event) => {
     if (event.target.classList.contains("friendItem")) {
         const userkey = event.target.id;
-        writeInfoInModal([userkey,await getDataInDatabase(`users/${userkey}`)])
+        writeInfoInModal([userkey, await getDataInDatabase(`users/${userkey}`)])
     }
 });
+
+
+
+function setProfilPic(file) {
+    const storageReference = storageRef(storage, 'profilePictures/' + activeUserKey);
+    const uploadTask = uploadBytesResumable(storageReference, file);
+
+    uploadTask.on('state_changed',
+        (snapshot) => {
+            document.querySelector('.profilPicText').textContent = "loading..."
+        },
+        (error) => {
+            console.error('Upload error:', error);
+        },
+        () => {
+            getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+                setDataInDatabase(`users/${activeUserKey}/profilPicUrl`, downloadURL)
+                document.querySelector('.profilPicText').textContent = file.name;
+            });
+        }
+    );
+
+}
+
