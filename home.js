@@ -91,9 +91,10 @@ function getHoursAndMinutes() {
 }
 
 
-
 document.getElementById("welcomeMessage").textContent = `Welcome, ${activeUserName}!`;  // qarşılama mesajı
 
+
+document.querySelector(".userPic").src = `${(await getDataInDatabase(`users/${activeUserKey}`)).profilPicUrl}`
 searchIconSelector.addEventListener("click", searchParams) // istifadəçini axtar iconuna click eventi 
 
 // close modala click olanda modalı bağlayır
